@@ -1,0 +1,106 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table users {
+  id uuid [primary key]
+  email varchar(255) [not null, unique]
+  password text [not null]
+  name varchar(255) [not null]
+  role varchar(50) [not null, default: 'user']
+  phone_number varchar(20)
+  profile_picture_url text
+  bio text
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table companies {
+  id uuid [primary key]
+  name varchar(255) [not null]
+  description text
+  website varchar(255)
+  logo_url text
+  location varchar(255) [not null]
+  industry varchar(100)
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table categories {
+  id uuid [primary key]
+  name varchar(100) [not null]
+  description text
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table jobs {
+  id uuid [primary key]
+  company_id uuid [not null]
+  category_id uuid [not null]
+  title varchar(255) [not null]
+  description text [not null]
+  requirements text
+  salary_min integer
+  salary_max integer
+  job_type varchar(50) [not null, default: 'Full-time']
+  experience_level varchar(50)
+  location_type varchar(50)
+  location_city varchar(255)
+  is_salary_visible boolean [not null, default: false]
+  status varchar(50) [not null, default: 'Open']
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table refresh_tokens {
+  id uuid [primary key]
+  token text [not null, unique]
+  user_id uuid [not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table documents {
+  id uuid [primary key]
+  user_id uuid [not null]
+  file_name varchar(255) [not null]
+  file_path text [not null]
+  mime_type varchar(100) [not null]
+  file_size integer [not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table applications {
+  id uuid [primary key]
+  user_id uuid [not null]
+  job_id uuid [not null]
+  status varchar(50) [not null, default: 'submitted']
+  cover_letter text
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (user_id, job_id) [unique, name: 'unique_applications_user_job']
+  }
+}
+
+Table bookmarks {
+  id uuid [primary key]
+  user_id uuid [not null]
+  job_id uuid [not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (user_id, job_id) [unique, name: 'unique_bookmarks_user_job']
+  }
+}
+
+Ref: jobs.company_id > companies.id
+Ref: jobs.category_id > categories.id
+Ref: refresh_tokens.user_id > users.id
+Ref: documents.user_id > users.id
+Ref: applications.user_id > users.id
+Ref: applications.job_id > jobs.id
+Ref: bookmarks.user_id > users.id
+Ref: bookmarks.job_id > jobs.id

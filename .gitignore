@@ -1,0 +1,67 @@
+# Environment variables
+.env*
+!.env.example
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE & Editor
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+.code/
+.vim/
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+dist/
+
+# Build artifacts
+build/
+out/
+uploads/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database files (if any local sqlite)
+*.db
+*.sqlite
+*.sqlite3
+
+# PM2 logs
+ecosystem.config.js.log
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Misc
+.DS_Store
+*.pem
+*.pdf

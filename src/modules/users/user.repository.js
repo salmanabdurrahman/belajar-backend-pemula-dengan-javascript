@@ -1,0 +1,71 @@
+import pool from '../../shared/libs/db.js';
+
+const USER_PROFILE_FIELDS =
+  'id, email, name, role, phone_number, profile_picture_url, bio, created_at, updated_at';
+
+const FIND_USER_BY_EMAIL_QUERY = 'SELECT * FROM users WHERE email = $1';
+const FIND_USER_BY_ID_QUERY = `SELECT ${USER_PROFILE_FIELDS} FROM users WHERE id = $1`;
+
+const CREATE_USER_QUERY = `INSERT INTO users (email, password, name, role, phone_number)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, email, name, role, phone_number, created_at, updated_at`;
+
+const UPDATE_USER_QUERY = `UPDATE users SET name = $1, phone_number = $2, bio = $3, profile_picture_url = $4, updated_at = CURRENT_TIMESTAMP
+WHERE id = $5
+RETURNING ${USER_PROFILE_FIELDS}`;
+
+class UserRepository {
+  async findByEmail(email) {
+    const query = {
+      text: FIND_USER_BY_EMAIL_QUERY,
+      values: [email],
+    };
+
+    const result = await pool.query(query);
+    return result.rows[0] || null;
+  }
+
+  async findById(id) {
+    const query = {
+      text: FIND_USER_BY_ID_QUERY,
+      values: [id],
+    };
+
+    const result = await pool.query(query);
+    return result.rows[0] || null;
+  }
+
+  async create(data) {
+    const { email, password, name, phoneNumber, role } = data;
+
+    const query = {
+      text: CREATE_USER_QUERY,
+      values: [
+        email,
+        password,
+        name,
+        role || 'user',
+        phoneNumber || null,
+      ],
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows[0];
+  }
+
+  async update(id, data) {
+    const { name, phoneNumber, bio, profilePictureUrl } = data;
+
+    const query = {
+      text: UPDATE_USER_QUERY,
+      values: [name, phoneNumber, bio, profilePictureUrl, id],
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows[0] || null;
+  }
+}
+
+export default new UserRepository();
