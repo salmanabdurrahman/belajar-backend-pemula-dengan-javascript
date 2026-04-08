@@ -3,6 +3,9 @@ import jobRepository from '../jobs/job.repository.js';
 import logger from '../../config/logger.js';
 import AppError from '../../core/errors/app-error.js';
 import { isValidUuid } from '../../shared/utils/validation.js';
+import cacheService from '../../shared/utils/cache.js';
+import cacheKeys from '../../shared/utils/cache-keys.js';
+import applicationNotificationPublisher from './application-notification.publisher.js';
 
 const toDomainApplication = (source = {}) => ({
   jobId: source['job_id'],
@@ -34,12 +37,26 @@ class ApplicationService {
         throw new AppError('Application not found', 404);
       }
 
+      const cacheKey = cacheKeys.applicationById(id);
+      const cachedApplication = await cacheService.get(cacheKey);
+      if (cachedApplication) {
+        return {
+          application: cachedApplication,
+          dataSource: 'cache',
+        };
+      }
+
       const application = await applicationRepository.findById(id);
       if (!application) {
         throw new AppError('Application not found', 404);
       }
 
-      return application;
+      await cacheService.set(cacheKey, application);
+
+      return {
+        application,
+        dataSource: 'database',
+      };
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Error fetching application', error);
@@ -50,11 +67,28 @@ class ApplicationService {
   async getByUserId(userId) {
     try {
       if (!isValidUuid(userId)) {
-        return [];
+        return {
+          applications: [],
+          dataSource: 'database',
+        };
+      }
+
+      const cacheKey = cacheKeys.applicationsByUserId(userId);
+      const cachedApplications = await cacheService.get(cacheKey);
+      if (cachedApplications) {
+        return {
+          applications: cachedApplications,
+          dataSource: 'cache',
+        };
       }
 
       const applications = await applicationRepository.findByUserId(userId);
-      return applications;
+      await cacheService.set(cacheKey, applications);
+
+      return {
+        applications,
+        dataSource: 'database',
+      };
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Error fetching applications by user', error);
@@ -65,11 +99,28 @@ class ApplicationService {
   async getByJobId(jobId) {
     try {
       if (!isValidUuid(jobId)) {
-        return [];
+        return {
+          applications: [],
+          dataSource: 'database',
+        };
+      }
+
+      const cacheKey = cacheKeys.applicationsByJobId(jobId);
+      const cachedApplications = await cacheService.get(cacheKey);
+      if (cachedApplications) {
+        return {
+          applications: cachedApplications,
+          dataSource: 'cache',
+        };
       }
 
       const applications = await applicationRepository.findByJobId(jobId);
-      return applications;
+      await cacheService.set(cacheKey, applications);
+
+      return {
+        applications,
+        dataSource: 'database',
+      };
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Error fetching applications by job', error);
@@ -107,6 +158,15 @@ class ApplicationService {
         })
       );
 
+      await cacheService.del(
+        cacheKeys.applicationsByUserId(userId),
+        cacheKeys.applicationsByJobId(domainInput.jobId)
+      );
+
+      void applicationNotificationPublisher.publishApplicationCreated(
+        application.id
+      );
+
       logger.info(`Application created: ${application.id}`);
       return application;
     } catch (error) {
@@ -132,6 +192,12 @@ class ApplicationService {
         input.status
       );
 
+      await cacheService.del(
+        cacheKeys.applicationById(id),
+        cacheKeys.applicationsByUserId(existing.user_id),
+        cacheKeys.applicationsByJobId(existing.job_id)
+      );
+
       logger.info(`Application updated: ${id}`);
       return application;
     } catch (error) {
@@ -153,6 +219,11 @@ class ApplicationService {
       }
 
       await applicationRepository.delete(id);
+      await cacheService.del(
+        cacheKeys.applicationById(id),
+        cacheKeys.applicationsByUserId(existing.user_id),
+        cacheKeys.applicationsByJobId(existing.job_id)
+      );
       logger.info(`Application deleted: ${id}`);
     } catch (error) {
       if (error instanceof AppError) throw error;

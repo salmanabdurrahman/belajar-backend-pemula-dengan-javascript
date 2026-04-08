@@ -22,13 +22,14 @@ class CompanyController {
   async getById(request, response) {
     const { id } = request.params;
 
-    const data = await companyService.getById(id);
+    const { company, dataSource } = await companyService.getById(id);
+    response.setHeader('X-Data-Source', dataSource);
 
-    sendSuccess(response, 200, 'Company retrieved successfully', data);
+    sendSuccess(response, 200, 'Company retrieved successfully', company);
   }
 
   async create(request, response) {
-    const data = await companyService.create(request.body);
+    const data = await companyService.create(request.user.id, request.body);
 
     sendSuccess(response, 201, 'Company created successfully', data);
   }

@@ -24,15 +24,23 @@ class ApplicationController {
   async getById(request, response) {
     const { id } = request.params;
 
-    const data = await applicationService.getById(id);
+    const { application, dataSource } = await applicationService.getById(id);
+    response.setHeader('X-Data-Source', dataSource);
 
-    sendSuccess(response, 200, 'Application retrieved successfully', data);
+    sendSuccess(
+      response,
+      200,
+      'Application retrieved successfully',
+      application
+    );
   }
 
   async getByUserId(request, response) {
     const { userId } = request.params;
 
-    const applications = await applicationService.getByUserId(userId);
+    const { applications, dataSource } =
+      await applicationService.getByUserId(userId);
+    response.setHeader('X-Data-Source', dataSource);
 
     sendSuccess(response, 200, 'User applications retrieved successfully', {
       applications,
@@ -42,7 +50,9 @@ class ApplicationController {
   async getByJobId(request, response) {
     const { jobId } = request.params;
 
-    const applications = await applicationService.getByJobId(jobId);
+    const { applications, dataSource } =
+      await applicationService.getByJobId(jobId);
+    response.setHeader('X-Data-Source', dataSource);
 
     sendSuccess(response, 200, 'Job applications retrieved successfully', {
       applications,

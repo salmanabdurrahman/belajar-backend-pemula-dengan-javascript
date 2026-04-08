@@ -22,13 +22,29 @@ class CompanyRepository {
   }
 
   async create(data) {
-    const { name, description, website, logoUrl, location, industry } = data;
+    const {
+      name,
+      description,
+      website,
+      logoUrl,
+      location,
+      industry,
+      ownerUserId,
+    } = data;
 
     const query = {
-      text: `INSERT INTO companies (name, description, website, logo_url, location, industry)
-             VALUES ($1, $2, $3, $4, $5, $6)
+      text: `INSERT INTO companies (name, description, website, logo_url, location, industry, owner_user_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
-      values: [name, description, website, logoUrl, location, industry],
+      values: [
+        name,
+        description,
+        website,
+        logoUrl,
+        location,
+        industry,
+        ownerUserId,
+      ],
     };
 
     const result = await pool.query(query);

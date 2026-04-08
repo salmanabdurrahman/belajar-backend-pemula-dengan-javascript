@@ -10,6 +10,7 @@ class UserController {
   constructor() {
     this.register = asyncHandler(this.register.bind(this));
     this.getById = asyncHandler(this.getById.bind(this));
+    this.update = asyncHandler(this.update.bind(this));
   }
 
   async register(request, response) {
@@ -26,12 +27,27 @@ class UserController {
   async getById(request, response) {
     const { id } = request.params;
 
-    const user = await userService.getById(id);
+    const { user, dataSource } = await userService.getById(id);
+    response.setHeader('X-Data-Source', dataSource);
 
     sendSuccess(
       response,
       200,
       'User retrieved successfully',
+      serializeUserDetail(user)
+    );
+  }
+
+  async update(request, response) {
+    const { id } = request.params;
+    const requestUserId = request.user.id;
+
+    const user = await userService.update(id, request.body, requestUserId);
+
+    sendSuccess(
+      response,
+      200,
+      'User updated successfully',
       serializeUserDetail(user)
     );
   }

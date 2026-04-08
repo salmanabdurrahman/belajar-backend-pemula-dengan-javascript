@@ -50,7 +50,7 @@ class JobController {
   }
 
   async create(request, response) {
-    const data = await jobService.create(request.body);
+    const data = await jobService.create(request.user.id, request.body);
 
     sendSuccess(response, 201, 'Job created successfully', data);
   }

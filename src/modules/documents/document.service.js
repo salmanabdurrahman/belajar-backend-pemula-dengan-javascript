@@ -27,7 +27,23 @@ class DocumentService {
         throw new AppError('Document not found', 404);
       }
 
-      return document;
+      const absolutePath = path.resolve(document.file_path);
+      let fileBuffer;
+
+      try {
+        fileBuffer = await fs.promises.readFile(absolutePath);
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          throw new AppError('Document not found', 404);
+        }
+
+        throw error;
+      }
+
+      return {
+        fileBuffer,
+        fileName: document.file_name,
+      };
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Error fetching document', error);
@@ -38,7 +54,11 @@ class DocumentService {
   async create(userId, file) {
     try {
       if (!file) {
-        throw new AppError('Document file is required', 400);
+        throw new AppError('File is required', 400);
+      }
+
+      if (file.mimetype !== 'application/pdf') {
+        throw new AppError('Only PDF files are allowed', 400);
       }
 
       const document = await documentRepository.create({
@@ -50,7 +70,12 @@ class DocumentService {
       });
 
       logger.info(`Document created: ${document.id}`);
-      return document;
+      return {
+        documentId: document.id,
+        filename: path.basename(file.path),
+        originalName: file.originalname,
+        size: file.size,
+      };
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Error creating document', error);

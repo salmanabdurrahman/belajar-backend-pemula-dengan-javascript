@@ -21,9 +21,14 @@ class DocumentController {
   async getById(request, response) {
     const { id } = request.params;
 
-    const data = await documentService.getById(id);
+    const { fileBuffer, fileName } = await documentService.getById(id);
 
-    sendSuccess(response, 200, 'Document retrieved successfully', data);
+    response.setHeader('Content-Type', 'application/pdf');
+    response.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${fileName}"`
+    );
+    response.status(200).send(fileBuffer);
   }
 
   async create(request, response) {

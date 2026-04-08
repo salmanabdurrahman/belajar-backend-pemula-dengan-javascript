@@ -3,6 +3,8 @@ import jobRepository from '../jobs/job.repository.js';
 import logger from '../../config/logger.js';
 import AppError from '../../core/errors/app-error.js';
 import { isValidUuid } from '../../shared/utils/validation.js';
+import cacheService from '../../shared/utils/cache.js';
+import cacheKeys from '../../shared/utils/cache-keys.js';
 
 class BookmarkService {
   async getById(userId, id, jobId) {
@@ -34,8 +36,22 @@ class BookmarkService {
         throw new AppError('User not found', 404);
       }
 
+      const cacheKey = cacheKeys.bookmarksByUserId(userId);
+      const cachedBookmarks = await cacheService.get(cacheKey);
+      if (cachedBookmarks) {
+        return {
+          bookmarks: cachedBookmarks,
+          dataSource: 'cache',
+        };
+      }
+
       const bookmarks = await bookmarkRepository.findByUserId(userId);
-      return bookmarks;
+      await cacheService.set(cacheKey, bookmarks);
+
+      return {
+        bookmarks,
+        dataSource: 'database',
+      };
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Error fetching bookmarks', error);
@@ -60,6 +76,7 @@ class BookmarkService {
       }
 
       const bookmark = await bookmarkRepository.create(userId, jobId);
+      await cacheService.del(cacheKeys.bookmarksByUserId(userId));
       logger.info(`Bookmark created: ${bookmark.id}`);
       return bookmark;
     } catch (error) {
@@ -81,6 +98,7 @@ class BookmarkService {
       }
 
       await bookmarkRepository.deleteByUserAndJob(userId, jobId);
+      await cacheService.del(cacheKeys.bookmarksByUserId(userId));
       logger.info(`Bookmark deleted for job: ${jobId}`);
     } catch (error) {
       if (error instanceof AppError) throw error;

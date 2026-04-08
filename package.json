@@ -1,7 +1,7 @@
 {
   "name": "belajar-fundamental-backend-dengan-javascript",
   "version": "1.0.0",
-  "description": "OpenJob RESTful API v1 - Backend dengan JavaScript",
+  "description": "OpenJob RESTful API v2 - Backend dengan JavaScript",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
@@ -19,13 +19,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^1.0.3",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
     "joi": "^18.1.2",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
-    "pg": "^8.20.0"
+    "nodemailer": "^8.0.5",
+    "pg": "^8.20.0",
+    "redis": "^5.11.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

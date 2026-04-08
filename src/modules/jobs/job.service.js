@@ -17,6 +17,7 @@ const toDomainJob = (source = {}) => ({
   locationCity: source['location_city'],
   isSalaryVisible: source['is_salary_visible'],
   status: source.status,
+  ownerUserId: source['owner_user_id'],
 });
 
 const toRepositoryJobPayload = (job) => ({
@@ -33,6 +34,7 @@ const toRepositoryJobPayload = (job) => ({
   ['location_city']: job.locationCity,
   ['is_salary_visible']: job.isSalaryVisible,
   status: job.status,
+  ['owner_user_id']: job.ownerUserId,
 });
 
 class JobService {
@@ -95,13 +97,18 @@ class JobService {
     }
   }
 
-  async create(input) {
+  async create(ownerUserId, input) {
     try {
+      if (!isValidUuid(ownerUserId)) {
+        throw new AppError('User not found', 404);
+      }
+
       const domainInput = toDomainJob(input);
       const jobPayload = toRepositoryJobPayload({
         ...domainInput,
         jobType: domainInput.jobType ?? 'Full-time',
         status: domainInput.status ?? 'Open',
+        ownerUserId,
       });
       const job = await jobRepository.create(jobPayload);
       logger.info(`Job created: ${job.id}`);
@@ -141,6 +148,7 @@ class JobService {
         isSalaryVisible:
           domainInput.isSalaryVisible ?? existingJob.isSalaryVisible,
         status: domainInput.status ?? existingJob.status,
+        ownerUserId: existingJob.ownerUserId,
       });
 
       const job = await jobRepository.update(id, jobPayload);

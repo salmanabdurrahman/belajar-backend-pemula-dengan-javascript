@@ -11,7 +11,10 @@ class BookmarkController {
   }
 
   async getAllByUser(request, response) {
-    const bookmarks = await bookmarkService.getByUserId(request.user.id);
+    const { bookmarks, dataSource } = await bookmarkService.getByUserId(
+      request.user.id
+    );
+    response.setHeader('X-Data-Source', dataSource);
 
     sendSuccess(response, 200, 'Bookmarks retrieved successfully', {
       bookmarks,
