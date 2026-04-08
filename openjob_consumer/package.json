@@ -1,0 +1,28 @@
+{
+  "name": "openjob-consumer",
+  "version": "1.0.0",
+  "description": "OpenJob Consumer - RabbitMQ Message Consumer for Application Notifications",
+  "type": "module",
+  "main": "src/consumer.js",
+  "scripts": {
+    "start": "node src/consumer.js",
+    "start:dev": "nodemon src/consumer.js"
+  },
+  "keywords": [
+    "rabbitmq",
+    "consumer",
+    "email",
+    "notifications"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^1.0.3",
+    "dotenv": "^17.4.0",
+    "nodemailer": "^8.0.5",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
